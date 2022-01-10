@@ -3,22 +3,20 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-// TODO: Move ownership to many contributors
-
-/// @title TODO
+/// @title An API for the Unicode database
 /// @author Devin Stein
-/// @notice TODO
-/// @dev TODO
-/// For more information, review https://www.unicode.org/reports/tr44/#UnicodeData.txt
+/// @notice The Unicode database available on Ethereum and to Ethereum developers
+/// @dev This project is only possible because of many previous Unicode data implementations. A few to highlight are
+/// https://unicode-org.github.io/icu-docs/apidoc/dev/icu4c/index.html
+/// https://github.com/open-i18n/rust-unic
+/// For more information, review https://www.unicode.org/reports/tr44
 contract UnicodeData is Ownable {
-  constructor() {}
-
   // Unicode Data Version
   uint8 public constant MAJOR_VERSION = 14;
   uint8 public constant MINOR_VERSION = 0;
   uint8 public constant PATCH_VERSION = 0;
 
-  // https://www.unicode.org/reports/tr44/#Bidi_Class_Values
+  /// @dev https://www.unicode.org/reports/tr44/#Bidi_Class_Values
   enum BidiClass {
     LEFT_TO_RIGHT,
     RIGHT_TO_LEFT,
@@ -45,7 +43,7 @@ contract UnicodeData is Ownable {
     FIRST_STRONG_ISOLATE
   }
 
-  // https://www.unicode.org/reports/tr44/#Decomposition_Type
+  /// @dev https://www.unicode.org/reports/tr44/#Decomposition_Type
   enum DecompositionType {
     NONE, /*[none]*/
     CANONICAL, /*[can]*/
@@ -67,40 +65,42 @@ contract UnicodeData is Ownable {
     WIDE /*[wide]*/
   }
 
-  // DecimalDigitNaN is the 'NaN' value for the decimal and digit properties
-  uint8 public constant DecimalDigitNaN = type(uint8).max;
+  /// @dev DECIMAL_DIGIT_NAN is the 'NaN' value for the decimal and digit properties
+  uint8 public constant DECIMAL_DIGIT_NAN = type(uint8).max;
 
-  function isNaN(uint8 _number) public pure returns (bool) {
+  function isNaN(uint8 _number) internal pure returns (bool) {
     // hardcode 1 and 0 to keep function pure (instead of view)
-    return _number == DecimalDigitNaN;
+    return _number == DECIMAL_DIGIT_NAN;
   }
 
   /// @dev: RationalNumber is a naive representation of a rational number.
   /// It is meant to store information for the numeric value of unicode characters.
   /// int128 is sufficient for current and likely future unicode characters.
-  /// signed ints are required for TIBETAN DIGIT HALF ZERO (0F33), which is negative
+  /// signed ints are required for TIBETAN DIGIT HALF ZERO (0F33), which is negative.
   /// It is not meant to provide utilities for rational number math.
   /// For downstream computation, use other libraries like
   /// https://github.com/hifi-finance/prb-math/
   /// https://github.com/abdk-consulting/abdk-libraries-solidity
   struct RationalNumber {
     int128 numerator;
-    int64 denominator;
+    int128 denominator;
   }
 
-  // RationalNumberNaN is the 'NaN' value for the numeric property
-  RationalNumber public RationalNumberNaN = RationalNumber(1, 0);
+  /// @dev RATIONAL_NUMBER_NAN is the 'NaN' value for the numeric property
+  RationalNumber public RATIONAL_NUMBER_NAN = RationalNumber(1, 0);
 
-  function isNaN(RationalNumber memory _number) public pure returns (bool) {
+  function isNaN(RationalNumber memory _number) internal pure returns (bool) {
     // hardcode 1 and 0 to keep function pure (instead of view)
     return _number.numerator == 1 && _number.denominator == 0;
   }
 
+  /// @dev Character represents the Unicode database character properties:
+  /// https://unicode.org/Public/UNIDATA/UnicodeData.txt
   // Order of Properties Matter: https://docs.soliditylang.org/en/v0.8.10/internals/layout_in_storage.html
   // name = 32 bytes
-  // decompisitonMapping = 32 bytes
   // numeric = 32 bytes
-  // category + combining + bidirectional + decompisitonType + decimal + digit + mirrored + lowercase + uppercase + titlecase = 20 bytes
+  // decompositionMapping = 32 bytes
+  // category + combining + bidirectional + decompositionType + decimal + digit + mirrored + lowercase + uppercase + titlecase = 20 bytes
   // 2 + 1 + 1 + 1 + 1 + 1 + 1  + 4 + 4 + 4 = 20 bytes
   struct Character {
     /// (1) When a string value not enclosed in &lt;angle brackets> occurs in this field,
@@ -116,15 +116,6 @@ contract UnicodeData is Ownable {
     ///
     /// [Unicode]: http://unicode.org/reports/tr41/tr41-21.html#Unicode
     string name;
-    /// (5) This is one half of the field containing both the values
-    /// [`Decomposition_Type` and `Decomposition_Mapping`], with the type in angle brackets.
-    /// The decomposition mappings exactly match the decomposition mappings
-    /// published with the character names in the Unicode Standard.
-    /// For more information, see [Character Decomposition Mappings][Decomposition Mappings].
-    ///
-    /// [Decomposition Mappings]: http://unicode.org/reports/tr44/#Character_Decomposition_Mappings
-    // The default value of the Decomposition_Mapping property is the code point of the character itself
-    uint32[] decompisitonMapping;
     /// (8) If the character has the property value `Numeric_Type=Numeric`,
     /// then the `Numeric_Value` of that character is represented with a positive or negative
     /// integer or rational number in this field, and fields 6 and 7 are null.
@@ -135,6 +126,15 @@ contract UnicodeData is Ownable {
     ///
     /// [`Numeric_Type`, Han]: http://unicode.org/reports/tr44/#Numeric_Type_Han
     RationalNumber numeric;
+    /// (5) This is one half of the field containing both the values
+    /// [`Decomposition_Type` and `Decomposition_Mapping`], with the type in angle brackets.
+    /// The decomposition mappings exactly match the decomposition mappings
+    /// published with the character names in the Unicode Standard.
+    /// For more information, see [Character Decomposition Mappings][Decomposition Mappings].
+    ///
+    /// [Decomposition Mappings]: http://unicode.org/reports/tr44/#Character_Decomposition_Mappings
+    // The default value of the Decomposition_Mapping property is the code point of the character itself
+    uint32[] decompositionMapping;
     /// (2) This is a useful breakdown into various character types which
     /// can be used as a default categorization in implementations.
     /// For the property values, see [General_Category Values].
@@ -168,7 +168,7 @@ contract UnicodeData is Ownable {
     /// For more information, see [Character Decomposition Mappings][Decomposition Mappings].
     ///
     /// [Decomposition Mappings]: http://unicode.org/reports/tr44/#Character_Decomposition_Mappings
-    DecompositionType decompisitonType;
+    DecompositionType decompositionType;
     /// (6) If the character has the property value `Numeric_Type=Decimal`,
     /// then the `Numeric_Value` of that digit is represented with an integer value
     /// (limited to the range 0..9) in fields 6, 7, and 8.
@@ -215,10 +215,10 @@ contract UnicodeData is Ownable {
   // Private mapping for characters
   mapping(bytes4 => Character) private characters;
 
-  uint8 constant MAX_BYTES = 4;
-  uint8 constant DEFAULT_NUMBER = type(uint8).max;
+  uint8 public constant MAX_BYTES = 4;
 
-  function getCharKey(string calldata _char) private pure returns (bytes4) {
+  /// @dev An internal function for getting the mapping key for a given `_char`
+  function getCharKey(string calldata _char) internal pure returns (bytes4) {
     bytes memory output = bytes(_char);
     // get length before padding output, which modifies length
     uint8 len = uint8(output.length);
@@ -244,14 +244,19 @@ contract UnicodeData is Ownable {
     require(_exists(_char.name), "character does not exist");
   }
 
-  // isValid returns true if the character exists
-  function isValid(string calldata _char) external view returns (bool) {
+  /// @notice Check if `_char` exists in the Unicode database
+  /// @dev All getters will error if a character doesn't exist.
+  /// exists allows you check before getting.
+  /// @param _char The character to check
+  /// @return True if character `_char` is valid and exists
+  function exists(string calldata _char) external view returns (bool) {
     if (bytes(_char).length > MAX_BYTES) return false;
     bytes4 key = getCharKey(_char);
     Character memory char = characters[key];
     return _exists(char.name);
   }
 
+  /// @dev Internal getter for characters and standard validation. It errors if the character doesn't exist.
   function get(string calldata _char) private view returns (Character memory) {
     canBeCharacter(_char);
     bytes4 key = getCharKey(_char);
@@ -261,30 +266,52 @@ contract UnicodeData is Ownable {
     return char;
   }
 
-  function set(string calldata _char, Character calldata data)
+  /// @notice This should only be used by the owner to initialize and update Unicode character database
+  /// @param _char The character to set
+  /// @param _data The character data
+  function set(string calldata _char, Character calldata _data)
     external
     onlyOwner
   {
     canBeCharacter(_char);
     bytes4 key = getCharKey(_char);
     // Require name to be non-empty!
-    require(bytes(data.name).length > 0, "character name must not be empty");
-    characters[key] = data;
+    require(bytes(_data.name).length > 0, "character name must not be empty");
+    characters[key] = _data;
   }
 
+  // -------
   // Getters
+  // -------
+
+  /// @notice Get the Unicode name of `_char`
+  /// @dev All Unicode characters will have a non-empty name
+  /// @param _char The character to get
+  /// @return The Unicode name of `_char`
   function name(string calldata _char) external view returns (string memory) {
     return get(_char).name;
   }
 
+  /// @notice Get the Unicode general category of `_char`
+  /// @dev See https://www.unicode.org/reports/tr44/#General_Category_Values for possible values
+  /// @param _char The character to get
+  /// @return The Unicode general category of `_char`
   function category(string calldata _char) external view returns (bytes2) {
     return get(_char).category;
   }
 
+  /// @notice Get the Unicode combining class of `_char`
+  /// @dev See https://www.unicode.org/reports/tr44/#Canonical_Combining_Class_Values for possible values
+  /// @param _char The character to get
+  /// @return The Unicode combining class of `_char`
   function combining(string calldata _char) external view returns (uint8) {
     return get(_char).combining;
   }
 
+  /// @notice Get the Unicode bidirectional (bidi) class of `_char`
+  /// @dev See https://www.unicode.org/reports/tr44/#Bidi_Class_Values for possible values
+  /// @param _char The character to get
+  /// @return The Unicode bidirectional (bidi) class of `_char`
   function bidirectional(string calldata _char)
     external
     view
@@ -293,22 +320,35 @@ contract UnicodeData is Ownable {
     return get(_char).bidirectional;
   }
 
-  function decompisitonType(string calldata _char)
+  /// @notice Get the Unicode decomposition type of `_char`
+  /// @dev See https://www.unicode.org/reports/tr44/#Decomposition_Type for possible values.
+  /// This can be used to implement the Unicode decomposition algorithm
+  /// @param _char The character to get
+  /// @return The Unicode decomposition type of `_char`
+  function decompositionType(string calldata _char)
     external
     view
     returns (DecompositionType)
   {
-    return get(_char).decompisitonType;
+    return get(_char).decompositionType;
   }
 
-  function decompisitonMapping(string calldata _char)
+  /// @notice Get the Unicode decomposition mapping of `_char`
+  /// @dev This can be used to implement the Unicode decomposition algorithm.
+  /// @param _char The character to get
+  /// @return The Unicode decomposition mapping as an array of code points of `_char`
+  function decompositionMapping(string calldata _char)
     external
     view
     returns (uint32[] memory)
   {
-    return get(_char).decompisitonMapping;
+    return get(_char).decompositionMapping;
   }
 
+  /// @notice Get the Unicode decimal property of `_char`
+  /// @dev This raises an error for characters without a decimal property. Values can only be within 0-9.
+  /// @param _char The character to get
+  /// @return The decimal value of `_char`
   function decimal(string calldata _char) external view returns (uint8) {
     Character memory char = get(_char);
     require(
@@ -318,6 +358,10 @@ contract UnicodeData is Ownable {
     return char.decimal;
   }
 
+  /// @notice Get the Unicode digit property of `_char`
+  /// @dev This raises an error for characters without a digit property. Values can only be within 0-9.
+  /// @param _char The character to get
+  /// @return The digit value of `_char`
   function digit(string calldata _char) external view returns (uint8) {
     Character memory char = get(_char);
     require(
@@ -327,6 +371,10 @@ contract UnicodeData is Ownable {
     return char.digit;
   }
 
+  /// @notice Get the Unicode numeric property of `_char`
+  /// @dev This raises an error for characters without a numeric property.
+  /// @param _char The character to get
+  /// @return The RationalNumber struct for the numeric property of `_char`
   function numeric(string calldata _char)
     external
     view
@@ -340,13 +388,24 @@ contract UnicodeData is Ownable {
     return char.numeric;
   }
 
+  /// @notice  If `_char` is a "mirrored" character in bidirectional text
+  /// @dev Do not confuse this with the Bidi_Mirroring_Glyph property
+  /// @param _char The character to get
+  /// @return True if `_char` is a "mirrored" character in bidirectional text
   function mirrored(string calldata _char) external view returns (bool) {
     return get(_char).mirrored;
   }
 
-  // TODO: OPTIMIZE pack bytes!
-  function codePointToChar(uint32 _input) public pure returns (string memory) {
-    bytes4 b = bytes4(_input);
+  /// @notice Get the Unicode character for a given code point
+  /// @dev This function does not validate the code point and can be made more efficient. Contributions are welcome!
+  /// @param _codePoint of the Unicode character
+  /// @return The character for a given code point.
+  function codePointToChar(uint32 _codePoint)
+    public
+    pure
+    returns (string memory)
+  {
+    bytes4 b = bytes4(_codePoint);
 
     bytes memory output = new bytes(4);
 
@@ -357,6 +416,10 @@ contract UnicodeData is Ownable {
     return string(output);
   }
 
+  /// @notice Get the simple uppercase value for a character if it exists
+  /// @dev This does not handle Special Casing. Contributions to fix this are welcome!
+  /// @param _char the character to uppercase
+  /// @return The corresponding uppercase character
   function uppercase(string calldata _char)
     external
     view
@@ -370,6 +433,10 @@ contract UnicodeData is Ownable {
     return codePointToChar(codePoint);
   }
 
+  /// @notice Get the simple lowercase value for a character if it exists
+  /// @dev This does not handle Special Casing. Contributions to fix this are welcome!
+  /// @param _char the character to lowercase
+  /// @return The corresponding lowercase character
   function lowercase(string calldata _char)
     external
     view
@@ -383,6 +450,10 @@ contract UnicodeData is Ownable {
     return codePointToChar(codePoint);
   }
 
+  /// @notice Get the simple titlecase value for a character if it exists
+  /// @dev This does not handle Special Casing. Contributions to fix this are welcome!
+  /// @param _char the character to titlecase
+  /// @return The corresponding titlecase character
   function titlecase(string calldata _char)
     external
     view
@@ -416,8 +487,11 @@ contract UnicodeData is Ownable {
     NUMERIC
   }
 
-  // numericType is not implemented because it relies on the Unicode Han Database (Unihan).
-  // https://www.unicode.org/Public/UNIDATA/extracted/DerivedNumericValues.txt
+  /// @notice Get the numeric type for `_char`
+  /// @dev This does not handle derived numeric types from the Unicode Han Database. Contributions to fix this are welcome!
+  /// https://www.unicode.org/Public/UNIDATA/extracted/DerivedNumericType.txt
+  /// @param _char the character to get
+  /// @return The numeric type for the character
   function numericType(string calldata _char)
     external
     view
@@ -436,8 +510,11 @@ contract UnicodeData is Ownable {
     return NumericType.NONE;
   }
 
-  // numericValue is not implemented because it relies on the Unicode Han Database (Unihan).
-  // https://www.unicode.org/Public/UNIDATA/extracted/DerivedNumericValues.txt
+  /// @notice Get the numeric value for `_char`
+  /// @dev This does not handle derived numeric types from the Unicode Han Database and is currently identical to the numeric property. Contributions to fix this are welcome!
+  /// https://www.unicode.org/Public/UNIDATA/extracted/DerivedNumericValues.txt
+  /// @param _char the character to get
+  /// @return The numeric value for the character
   function numericValue(string calldata _char)
     external
     view
@@ -448,81 +525,127 @@ contract UnicodeData is Ownable {
     return char.numeric;
   }
 
+  /// @notice Check if `_char` is lowercase
+  /// @dev This is only for a single Unicode character not entire strings
+  /// @param _char the character to get
+  /// @return True if the character is lowercase
   function isLowercase(string calldata _char) public view returns (bool) {
     Character memory char = get(_char);
     return char.category == "Ll";
   }
 
+  /// @notice Check if `_char` is uppercase
+  /// @dev This is only for a single Unicode character not entire strings
+  /// @param _char the character to get
+  /// @return True if the character is uppercase
   function isUppercase(string calldata _char) public view returns (bool) {
     Character memory char = get(_char);
     return char.category == "Lu";
   }
 
+  /// @notice Check if `_char` is titlecase
+  /// @dev This is only for a single Unicode character not entire strings
+  /// @param _char the character to get
+  /// @return True if the character is titlecase
   function isTitlecase(string calldata _char) public view returns (bool) {
     Character memory char = get(_char);
     return char.category == "Lt";
   }
 
+  /// @notice Check if `_char` is cased
+  /// @dev This is only for a single Unicode character not entire strings
+  /// @param _char the character to get
+  /// @return True if the character is cased
   function isCased(string calldata _char) public view returns (bool) {
     return isLowercase(_char) || isUppercase(_char) || isTitlecase(_char);
   }
 
+  /// @notice Check if `_char` is a letter
+  /// @dev This is only for a single Unicode character not entire strings
+  /// @param _char the character to get
+  /// @return True if the character is a letter
   function isLetter(string calldata _char) public view returns (bool) {
     Character memory char = get(_char);
     return char.category[0] == "L";
   }
 
+  /// @notice Check if `_char` is a alphabetic
+  /// @dev This is only for a single Unicode character not entire strings
+  /// @param _char the character to get
+  /// @return True if the character is a alphabetic
   function isAlphabetic(string calldata _char) external view returns (bool) {
     Character memory char = get(_char);
     return isLetter(_char) || char.category == "Nl";
   }
 
+  /// @notice Check if `_char` is a number
+  /// @dev This is only for a single Unicode character not entire strings
+  /// @param _char the character to get
+  /// @return True if the character is a number
   function isNumber(string calldata _char) public view returns (bool) {
     Character memory char = get(_char);
     return char.category[0] == "N";
   }
 
+  /// @notice Check if `_char` is a alphanumeric
+  /// @dev This is only for a single Unicode character not entire strings
+  /// @param _char the character to get
+  /// @return True if the character is a alphanumeric
   function isAlphanumeric(string calldata _char) external view returns (bool) {
     return isLetter(_char) || isNumber(_char);
   }
 
+  /// @notice Check if `_char` is a mathematic symbol
+  /// @dev This is only for a single Unicode character not entire strings
+  /// @param _char the character to get
+  /// @return True if the character is a mathematic symbol
   function isMath(string calldata _char) external view returns (bool) {
     Character memory char = get(_char);
     return char.category == "Sm";
   }
 
+  /// @notice Check if `_char` is a symbol
+  /// @dev This is only for a single Unicode character not entire strings
+  /// @param _char the character to get
+  /// @return True if the character is a symbol
   function isSymbol(string calldata _char) external view returns (bool) {
     Character memory char = get(_char);
     return char.category[0] == "S";
   }
 
+  /// @notice Check if `_char` is a mark
+  /// @dev This is only for a single Unicode character not entire strings
+  /// @param _char the character to get
+  /// @return True if the character is a mark
   function isMark(string calldata _char) external view returns (bool) {
     Character memory char = get(_char);
     return char.category[0] == "M";
   }
 
+  /// @notice Check if `_char` is punctuation
+  /// @dev This is only for a single Unicode character not entire strings
+  /// @param _char the character to get
+  /// @return True if the character is punctuation
   function isPunctuation(string calldata _char) external view returns (bool) {
     Character memory char = get(_char);
     return char.category[0] == "P";
   }
 
+  /// @notice Check if `_char` is a separator (whitespace)
+  /// @dev This is only for a single Unicode character not entire strings
+  /// @param _char the character to get
+  /// @return True if the character is a separator (whitespace)
   function isSeparator(string calldata _char) external view returns (bool) {
     Character memory char = get(_char);
     return char.category[0] == "Z";
   }
 
+  /// @notice Check if `_char` is in the 'Other' category
+  /// @dev This is only for a single Unicode character not entire strings
+  /// @param _char the character to get
+  /// @return True if the character is in the 'Other' category
   function isOther(string calldata _char) external view returns (bool) {
     Character memory char = get(_char);
     return char.category[0] == "C";
   }
-
-  // blocks
-  // isEmoji
-  // East_Asian_Width
-  // Joining Group
-  // Joining Type
-
-  // toLowercase
-  // toTitlecase
-  // toTitlecase
 }
