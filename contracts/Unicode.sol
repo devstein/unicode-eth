@@ -4,14 +4,14 @@ pragma solidity ^0.8.9;
 /// @title A library for validating, parsing, and manipulating UTF-8 encoded Unicode strings
 /// @author Devin Stein
 /// @notice For character introspection or more complex transformations, checkout the UnicodeData contract.
-/// @dev All external and public functions use _str as their first parameter to allow "using Unicode for strings;". If you have ideas for new functions or improvements, please contribute!
+/// @dev All external and public functions use self as their first parameter to allow "using Unicode for strings;". If you have ideas for new functions or improvements, please contribute!
 library Unicode {
-  /// @notice Check if `_str` contains only ASCII characters
+  /// @notice Check if `self` contains only ASCII characters
   /// @dev If a string is only ASCII, then it's safe to treat each byte as a character
-  /// @param _str The input string
-  /// @return True if  the `_str` only contains ASCII
-  function isASCII(string calldata _str) external pure returns (bool) {
-    bytes calldata _b = bytes(_str);
+  /// @param self The input string
+  /// @return True if  the `self` only contains ASCII
+  function isASCII(string calldata self) external pure returns (bool) {
+    bytes calldata _b = bytes(self);
     uint256 len = _b.length;
 
     for (uint256 i = 0; i < len; i++) {
@@ -67,12 +67,12 @@ library Unicode {
       uint8(_b[3] & 0x3f);
   }
 
-  /// @notice Get length of `_str`
+  /// @notice Get length of `self`
   /// @dev For efficiency, length assumes valid UTF-8 encoded input. It only does simple checks for bytes sequences
-  /// @param _str The input string
-  /// @return The number of UTF-8 characters in `_str`
-  function length(string calldata _str) public pure returns (uint256) {
-    bytes memory _b = bytes(_str);
+  /// @param self The input string
+  /// @return The number of UTF-8 characters in `self`
+  function length(string calldata self) public pure returns (uint256) {
+    bytes memory _b = bytes(self);
     uint256 end = _b.length;
     uint256 len;
     uint256 i;
@@ -100,12 +100,12 @@ library Unicode {
     return len;
   }
 
-  /// @notice Get the code point of character: `_str`
+  /// @notice Get the code point of character: `self`
   /// @dev This function requires a valid UTF-8 character
-  /// @param _str The input character
-  /// @return The code point of `_str`
-  function toCodePoint(string memory _str) public pure returns (uint32) {
-    bytes memory _b = bytes(_str);
+  /// @param self The input character
+  /// @return The code point of `self`
+  function toCodePoint(string memory self) public pure returns (uint32) {
+    bytes memory _b = bytes(self);
     uint256 len = _b.length;
 
     require(
@@ -144,11 +144,11 @@ library Unicode {
     return 0;
   }
 
-  /// @notice Check if `_str` is valid UTF-8
-  /// @param _str The input string
+  /// @notice Check if `self` is valid UTF-8
+  /// @param self The input string
   /// @return True if the string is UTF-8 encoded
-  function isUTF8(string calldata _str) external pure returns (bool) {
-    bytes memory _b = bytes(_str);
+  function isUTF8(string calldata self) external pure returns (bool) {
+    bytes memory _b = bytes(self);
     uint256 end = _b.length;
     uint32 cp;
     uint256 i;
@@ -214,17 +214,17 @@ library Unicode {
     return true;
   }
 
-  /// @notice Decode the next UTF-8 character in `_str` given a starting position of `_cursor`
+  /// @notice Decode the next UTF-8 character in `self` given a starting position of `_cursor`
   /// @dev decodeChar is useful for functions want to iterate over the string in one pass and check each category for a condition
-  /// @param _str The input string
+  /// @param self The input string
   /// @param _cursor The starting bytes position (inclusive) of the character
   /// @return The next character as a string and the starting position of the next character.
-  function decodeChar(string calldata _str, uint256 _cursor)
+  function decodeChar(string calldata self, uint256 _cursor)
     public
     pure
     returns (string memory, uint256)
   {
-    bytes memory _b = bytes(_str);
+    bytes memory _b = bytes(self);
     uint256 len = _b.length;
     bytes memory output;
     uint32 cp;
@@ -313,26 +313,26 @@ library Unicode {
     return ("", 0);
   }
 
-  /// @notice Decode every UTF-8 characters in `_str`
-  /// @param _str The input string
-  /// @return An ordered array of all UTF-8 characters  in `_str`
-  function decode(string calldata _str)
+  /// @notice Decode every UTF-8 characters in `self`
+  /// @param self The input string
+  /// @return An ordered array of all UTF-8 characters  in `self`
+  function decode(string calldata self)
     external
     pure
     returns (string[] memory)
   {
     // The charaters array must be initialized to a fixed size.
     // Loop over the string to get the number of charcters before decoding.
-    uint256 size = length(_str);
+    uint256 size = length(self);
     string[] memory characters = new string[](size);
 
     string memory char;
     uint256 cursor = 0;
-    uint256 len = bytes(_str).length;
+    uint256 len = bytes(self).length;
     uint256 idx;
 
     while (cursor < len) {
-      (char, cursor) = decodeChar(_str, cursor);
+      (char, cursor) = decodeChar(self, cursor);
       characters[idx] = char;
       idx++;
     }
@@ -340,22 +340,22 @@ library Unicode {
     return characters;
   }
 
-  /// @notice Get the UTF-8 character at `_idx` for `_str`
+  /// @notice Get the UTF-8 character at `_idx` for `self`
   /// @dev charAt will error if the idx is out of bounds
-  /// @param _str The input string
+  /// @param self The input string
   /// @param _idx The index of the character to get
   /// @return The character at the given index
-  function charAt(string calldata _str, uint256 _idx)
+  function charAt(string calldata self, uint256 _idx)
     public
     pure
     returns (string memory)
   {
     string memory char;
-    uint256 len = bytes(_str).length;
+    uint256 len = bytes(self).length;
     uint256 cursor;
 
     for (uint256 i = 0; i <= _idx; i++) {
-      (char, cursor) = decodeChar(_str, cursor);
+      (char, cursor) = decodeChar(self, cursor);
       // if we hit the end, it must be the _idx
       require(cursor < len || i == _idx, "index out of bounds");
     }
@@ -363,40 +363,40 @@ library Unicode {
     return char;
   }
 
-  /// @notice Get the Unicode code point at `_idx` for `_str`
+  /// @notice Get the Unicode code point at `_idx` for `self`
   /// @dev codePointAt requires a valid UTF-8 string
-  /// @param _str The input string
+  /// @param self The input string
   /// @param _idx The index of the code point to get
   /// @return The Unicode code point at the given index
-  function codePointAt(string calldata _str, uint256 _idx)
+  function codePointAt(string calldata self, uint256 _idx)
     external
     pure
     returns (uint32)
   {
-    return toCodePoint(charAt(_str, _idx));
+    return toCodePoint(charAt(self, _idx));
   }
 
   /// @notice The return value of indexOf and bytesIndicesOf if the character is not found
   /// @dev Use CHAR_NOT_FOUND to check if indexOf or bytesIndicesOf does not find the inputted character
   uint256 public constant CHAR_NOT_FOUND = type(uint256).max;
 
-  /// @notice Get the character index of `_of` in string `_str`
-  /// @dev indexOf returns CHAR_NOT_FOUND if `_of` isn't found in `_str`
-  /// @param _str The input string
+  /// @notice Get the character index of `_of` in string `self`
+  /// @dev indexOf returns CHAR_NOT_FOUND if `_of` isn't found in `self`
+  /// @param self The input string
   /// @param _of The character to find the index of
   /// @return The index of the character in the given string
-  function indexOf(string calldata _str, string calldata _of)
+  function indexOf(string calldata self, string calldata _of)
     external
     pure
     returns (uint256)
   {
     string memory char;
     uint256 cursor = 0;
-    uint256 len = bytes(_str).length;
+    uint256 len = bytes(self).length;
     uint256 idx;
 
     while (cursor < len) {
-      (char, cursor) = decodeChar(_str, cursor);
+      (char, cursor) = decodeChar(self, cursor);
       if (keccak256(bytes(char)) == keccak256(bytes(_of))) return idx;
       idx++;
     }
@@ -404,12 +404,12 @@ library Unicode {
     return CHAR_NOT_FOUND;
   }
 
-  /// @notice Get the starting (inclusive) and ending (exclusive) bytes indices of character `_of` in string `_str`
-  /// @dev bytesIndicesOf returns (CHAR_NOT_FOUND, CHAR_NOT_FOUND) if `_of` isn't found in `_str`
-  /// @param _str The input string
+  /// @notice Get the starting (inclusive) and ending (exclusive) bytes indices of character `_of` in string `self`
+  /// @dev bytesIndicesOf returns (CHAR_NOT_FOUND, CHAR_NOT_FOUND) if `_of` isn't found in `self`
+  /// @param self The input string
   /// @param _of The character to find the bytes indices of
   /// @return The starting (inclusive) and ending (exclusive) indites the character in the bytes underlying the string
-  function bytesIndicesOf(string calldata _str, string calldata _of)
+  function bytesIndicesOf(string calldata self, string calldata _of)
     external
     pure
     returns (uint256, uint256)
@@ -417,12 +417,12 @@ library Unicode {
     string memory char;
     uint256 start;
     uint256 cursor = 0;
-    uint256 len = bytes(_str).length;
+    uint256 len = bytes(self).length;
 
     while (cursor < len) {
       // start is the prev cursor before the character
       start = cursor;
-      (char, cursor) = decodeChar(_str, cursor);
+      (char, cursor) = decodeChar(self, cursor);
       if (keccak256(bytes(char)) == keccak256(bytes(_of)))
         return (start, cursor);
     }
