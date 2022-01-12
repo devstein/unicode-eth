@@ -6,8 +6,8 @@ pragma solidity ^0.8.9;
 /// @notice For character introspection or more complex transformations, checkout the UnicodeData contract.
 /// @dev All external and public functions use self as their first parameter to allow "using Unicode for strings;". If you have ideas for new functions or improvements, please contribute!
 library Unicode {
-  /// @notice Check if `self` contains only ASCII characters
-  /// @dev If a string is only ASCII, then it's safe to treat each byte as a character
+  /// @notice Check if `self` contains only single byte ASCII characters (0-127)
+  /// @dev If a string is only ASCII, then it's safe to treat each byte as a character. This returns false for extended ASCII (128-255) because they are use two bytes in UTF-8.
   /// @param self The input string
   /// @return True if  the `self` only contains ASCII
   function isASCII(string calldata self) external pure returns (bool) {
