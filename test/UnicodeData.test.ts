@@ -2,9 +2,20 @@ import { ethers } from "hardhat";
 import { Signer } from "ethers";
 import { expect } from "chai";
 
+const deploy = async () => {
+  const C = await ethers.getContractFactory("UnicodeData");
+  const contract = await C.deploy();
+
+  return contract;
+};
+
 describe("UnicodeData Contract", function () {
   it("should deploy", async function () {
-    expect(false).to.equal(true);
+    try {
+      await deploy();
+    } catch (error) {
+      expect(false).to.equal("failed to deploy");
+    }
   });
 
   it("should initialize", async function () {
