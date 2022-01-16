@@ -56,8 +56,8 @@ export const formatEnums = ({
   return {
     ...character,
     // @ts-ignore
-    bidirectional: enumMapping.bidi[bidirectional.toUpperCase()],
+    bidirectional: bidi[bidirectional.toUpperCase()],
     // @ts-ignore
-    decompositionType: enumMapping.decomp[decompositionType.toUpperCase()],
+    decompositionType: decomp[decompositionType.toUpperCase()],
   };
 };

@@ -39,7 +39,7 @@ const nameRuleOne = (
 };
 
 const nameRuleTwo = (name: string, code: number) =>
-  `${name}-${code.toString(16)}`;
+  `${name}-${code.toString(16).toUpperCase()}`;
 
 export const getName = (
   name: string,
