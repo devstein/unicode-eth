@@ -3,6 +3,9 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+import "./Unicode.sol";
+import "./UTF8Encoder.sol";
+
 /// @title An API for the Unicode database
 /// @author Devin Stein
 /// @notice The Unicode database available on Ethereum and to Ethereum developers
@@ -11,6 +14,9 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 /// https://github.com/open-i18n/rust-unic
 /// For more information, review https://www.unicode.org/reports/tr44
 contract UnicodeData is Ownable {
+  using Unicode for string;
+  using UTF8Encoder for uint32;
+
   // Unicode Data Version
   uint8 public constant MAJOR_VERSION = 14;
   uint8 public constant MINOR_VERSION = 0;
@@ -212,21 +218,10 @@ contract UnicodeData is Ownable {
     uint32 titlecase;
   }
 
-  // Private mapping for characters
-  mapping(bytes4 => Character) private characters;
+  // Mapping from Unicode code point to character properties
+  mapping(uint32 => Character) public characters;
 
   uint8 public constant MAX_BYTES = 4;
-
-  /// @dev An internal function for getting the mapping key for a given `_char`
-  function getCharKey(string calldata _char) internal pure returns (bytes4) {
-    bytes memory output = bytes(_char);
-    // get length before padding output, which modifies length
-    uint8 len = uint8(output.length);
-    for (uint8 i = 0; i < 4 - len; i++) {
-      output = bytes.concat(bytes1(0x00), output);
-    }
-    return bytes4(output);
-  }
 
   // simple check if a string could be a valid character
   function canBeCharacter(string calldata _char) private pure {
@@ -251,33 +246,26 @@ contract UnicodeData is Ownable {
   /// @return True if character `_char` is valid and exists
   function exists(string calldata _char) external view returns (bool) {
     if (bytes(_char).length > MAX_BYTES) return false;
-    bytes4 key = getCharKey(_char);
-    Character memory char = characters[key];
+    Character memory char = characters[_char.toCodePoint()];
     return _exists(char.name);
   }
 
   /// @dev Internal getter for characters and standard validation. It errors if the character doesn't exist.
   function get(string calldata _char) private view returns (Character memory) {
     canBeCharacter(_char);
-    bytes4 key = getCharKey(_char);
-    Character memory char = characters[key];
+    Character memory char = characters[_char.toCodePoint()];
     // Require the character exists
     mustExist(char);
     return char;
   }
 
   /// @notice This should only be used by the owner to initialize and update Unicode character database
-  /// @param _char The character to set
+  /// @param _codePoint The Unicode code point to set
   /// @param _data The character data
-  function set(string calldata _char, Character calldata _data)
-    external
-    onlyOwner
-  {
-    canBeCharacter(_char);
-    bytes4 key = getCharKey(_char);
+  function set(uint32 _codePoint, Character calldata _data) external onlyOwner {
     // Require name to be non-empty!
     require(bytes(_data.name).length > 0, "character name must not be empty");
-    characters[key] = _data;
+    characters[_codePoint] = _data;
   }
 
   // -------
@@ -396,41 +384,21 @@ contract UnicodeData is Ownable {
     return get(_char).mirrored;
   }
 
-  /// @notice Get the Unicode character for a given code point
-  /// @dev This function does not validate the code point and can be made more efficient. Contributions are welcome!
-  /// @param _codePoint of the Unicode character
-  /// @return The character for a given code point.
-  function codePointToChar(uint32 _codePoint)
-    public
-    pure
-    returns (string memory)
-  {
-    bytes4 b = bytes4(_codePoint);
-
-    bytes memory output = new bytes(4);
-
-    for (uint8 i = 0; i < 4; i++) {
-      output[i] = b[i];
-    }
-
-    return string(output);
-  }
-
   /// @notice Get the simple uppercase value for a character if it exists
   /// @dev This does not handle Special Casing. Contributions to fix this are welcome!
   /// @param _char the character to uppercase
   /// @return The corresponding uppercase character
   function uppercase(string calldata _char)
-    external
+    public
     view
     returns (string memory)
   {
     uint32 codePoint = get(_char).uppercase;
 
-    // default to 0
+    // default to same character
     if (codePoint == 0) return _char;
 
-    return codePointToChar(codePoint);
+    return codePoint.UTF8Encode();
   }
 
   /// @notice Get the simple lowercase value for a character if it exists
@@ -444,10 +412,10 @@ contract UnicodeData is Ownable {
   {
     uint32 codePoint = get(_char).lowercase;
 
-    // default to 0
+    // default to the same character
     if (codePoint == 0) return _char;
 
-    return codePointToChar(codePoint);
+    return codePoint.UTF8Encode();
   }
 
   /// @notice Get the simple titlecase value for a character if it exists
@@ -461,10 +429,10 @@ contract UnicodeData is Ownable {
   {
     uint32 codePoint = get(_char).titlecase;
 
-    // default to 0
-    if (codePoint == 0) return _char;
+    // default to uppercase
+    if (codePoint == 0) return uppercase(_char);
 
-    return codePointToChar(codePoint);
+    return codePoint.UTF8Encode();
   }
 
   // Derived Properties

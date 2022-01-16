@@ -5,10 +5,10 @@ pragma solidity ^0.8.9;
 /// @author Devin Stein
 library UTF8Encoder {
   /// @notice Get the UTF-8 string for `self`
-  /// @dev encode will error if the code point is not valid
-  /// @param self The code point to encode
+  /// @dev UTF8Encode will error if the code point is not valid
+  /// @param self The code point to UTF-8 encode
   /// @return The UTF-8 string for the given code point
-  function encode(uint32 self) external pure returns (string memory) {
+  function UTF8Encode(uint32 self) external pure returns (string memory) {
     bytes memory out;
     if (self <= 0x7F) {
       // Plain ASCII

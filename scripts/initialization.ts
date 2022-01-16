@@ -29,17 +29,18 @@ export const initializeUnicodeData = async (contract: Contract) => {
   for (let char of characters) {
     // keep track of progress
     count++;
+    process.stdout.clearLine(1);
     process.stdout.write(
-      `${count} of ${total}\t${((count / total) * 100).toFixed(2)}% \r`
+      `${count} of ${total}\t${((count / total) * 100).toFixed(2)}% \t ${
+        char.name
+      }\r`
     );
 
     // set each character
-    const str = String.fromCodePoint(char.code);
     const data = charToParameter(char);
     try {
-      await contract.set(str, data);
+      await contract.set(char.code, data);
     } catch (err) {
-      console.error(err);
       console.log("failed to set:", char);
       break;
     }

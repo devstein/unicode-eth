@@ -105,17 +105,16 @@ const parseUnicodeData = (data: string): Character[] =>
       character.digit = digit !== "" ? parseInt(digit, 10) : DECIMAL_NAN;
       character.numeric = numeric !== "" ? parseNumeric(numeric) : NUMERIC_NAN;
 
-      // default uppercase and lowercase to the character's own code point
+      // handle default in contract
       character.uppercase =
-        uppercase !== "" ? parseInt(uppercase, HEXADECIMAL) : character.code;
+        uppercase !== "" ? parseInt(uppercase, HEXADECIMAL) : 0;
+      // handle default in contract
       character.lowercase =
-        lowercase !== "" ? parseInt(lowercase, HEXADECIMAL) : character.code;
+        lowercase !== "" ? parseInt(lowercase, HEXADECIMAL) : 0;
 
-      // default titlecase to uppercase
+      // handle default in contract
       character.titlecase =
-        titlecase !== ""
-          ? parseInt(titlecase, HEXADECIMAL)
-          : character.uppercase;
+        titlecase !== "" ? parseInt(titlecase, HEXADECIMAL) : 0;
 
       return character as Character;
     });
