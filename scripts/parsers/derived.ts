@@ -21,7 +21,6 @@ const parseDerivedData = (text: string): DerivedData =>
 
       // single unicode character
       if (!end) {
-        console.log(startCode);
         return { ...acc, [startCode]: value };
       }
 

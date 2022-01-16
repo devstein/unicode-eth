@@ -29,6 +29,7 @@ const DERIVED_BIDI_CLASS_FILE = `${DATA_DIR}/derivedBidiClasses.json`;
 export const getUnicodeData = async (): Promise<Character[]> => {
   // check if file exists
   try {
+    console.log("reading local unicode file...");
     const data = fs.readFileSync(UNICODE_FILE).toString();
     return JSON.parse(data);
   } catch (err) {
@@ -42,7 +43,7 @@ export const getUnicodeData = async (): Promise<Character[]> => {
     const data = fs.readFileSync(DERIVED_DECOMPOSITION_FILE).toString();
     derivedDecompTypes = JSON.parse(data);
   } catch (err) {
-    console.log(err);
+    console.log("no local derived decomposition types found");
     console.log("fetching derived decomposition type data...");
     const derivedDecompTypesData = await fetchText(
       DERIVED_DECOMPOSITION_TYPE_URL
@@ -64,7 +65,7 @@ export const getUnicodeData = async (): Promise<Character[]> => {
     const data = fs.readFileSync(DERIVED_BIDI_CLASS_FILE).toString();
     derivedBidiClasses = JSON.parse(data);
   } catch (err) {
-    console.log(err);
+    console.log("no local derived bidi classes found");
     console.log("fetching derived bidi class data...");
     const derivedBidiClassesData = await fetchText(DERIVED_BIDI_CLASS_URL);
     console.log("parsing derived bidi class data...");

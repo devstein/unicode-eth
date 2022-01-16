@@ -24,7 +24,9 @@ export const deployUnicodeLibrary = async (): Promise<Contract> => {
   return contract;
 };
 
-export const deployAll = async (): Promise<Contract> => {
+export const deployAll = async (): Promise<Contract[]> => {
   const unicodeData = await deployUnicodeData();
-  const unicodeDecoder = await deployUnicodeLibrary();
+  const unicodeLibrary = await deployUnicodeLibrary();
+
+  return [unicodeData, unicodeLibrary];
 };
