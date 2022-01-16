@@ -3,7 +3,7 @@
     "prettier": "npx prettier --write 'contracts/**/*.sol'"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^4.1.0"
+    "@openzeppelin/contracts": "^4.4.2"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.2",
