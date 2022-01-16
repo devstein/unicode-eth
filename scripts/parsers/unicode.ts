@@ -71,7 +71,7 @@ const parseUnicodeData = (data: string): Character[] =>
       ] = line.split(";");
 
       // initialize the character with required fields
-      const character: Character = {
+      const character: Partial<Character> = {
         // code is hexadecimal
         code: parseInt(code, HEXADECIMAL),
         // name is a string
@@ -117,7 +117,7 @@ const parseUnicodeData = (data: string): Character[] =>
           ? parseInt(titlecase, HEXADECIMAL)
           : character.uppercase;
 
-      return character;
+      return character as Character;
     });
 
 export default parseUnicodeData;

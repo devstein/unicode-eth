@@ -30,18 +30,18 @@ export interface Character {
     Otherwise, if field 8 is non-empty, then Numeric_Type=Numeric.
     For characters listed in the Unihan data files, Numeric_Type=Numeric for characters that have kPrimaryNumeric, kAccountingNumeric, or kOtherNumeric tags. The default value is Numeric_Type=None.
   */
-  decimal?: number;
-  digit?: number;
+  decimal: number;
+  digit: number;
   /** numeric value of character (may be a fraction, so it not unevaluated) */
-  numeric?: Numeric;
+  numeric: Numeric;
   /** true if character is mirrored in bidirectional text (missing otherwise) */
-  mirrored?: boolean;
+  mirrored: boolean;
   /** simple uppercase mapping */
-  uppercase?: number;
+  uppercase: number;
   /** simple lowercase mapping */
-  lowercase?: number;
+  lowercase: number;
   /** simple titlecase mapping */
-  titlecase?: number;
+  titlecase: number;
 }
 
 export type JamoShortNames = Record<string, string>;
