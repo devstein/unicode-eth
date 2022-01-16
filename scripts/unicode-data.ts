@@ -14,8 +14,6 @@ import { expander } from "./transformers/expander";
 
 import { Character, JamoShortNames, DerivedData } from "./types";
 
-// WOW: https://github.com/ethers-io/ethers.js/blob/master/packages/strings/src.ts/utf8.ts#L293
-
 const UNICODE_DATA_URL = "https://unicode.org/Public/UNIDATA/UnicodeData.txt";
 const JAMO_URL = "http://unicode.org/Public/UNIDATA/Jamo.txt";
 const DERIVED_DECOMPOSITION_TYPE_URL =
@@ -23,13 +21,26 @@ const DERIVED_DECOMPOSITION_TYPE_URL =
 const DERIVED_BIDI_CLASS_URL =
   "https://www.unicode.org/Public/UNIDATA/extracted/DerivedBidiClass.txt";
 
+const DATA_DIR = "./data";
+const UNICODE_FILE = `${DATA_DIR}/unicode.json`;
+const DERIVED_DECOMPOSITION_FILE = `${DATA_DIR}/derivedDecompTypes.json`;
+const DERIVED_BIDI_CLASS_FILE = `${DATA_DIR}/derivedBidiClasses.json`;
+
 export const getUnicodeData = async (): Promise<Character[]> => {
+  // check if file exists
+  try {
+    const data = fs.readFileSync(UNICODE_FILE).toString();
+    return JSON.parse(data);
+  } catch (err) {
+    console.log("no unicode data file found.\nre-computing...");
+  }
+
   let derivedDecompTypes: DerivedData;
   try {
     // read cached file
     console.log("reading local derived decomposition types data...");
-    const d = fs.readFileSync("./data/derivedDecompTypes.json");
-    derivedDecompTypes = JSON.parse(d.toString());
+    const data = fs.readFileSync(DERIVED_DECOMPOSITION_FILE).toString();
+    derivedDecompTypes = JSON.parse(data);
   } catch (err) {
     console.log(err);
     console.log("fetching derived decomposition type data...");
@@ -41,7 +52,7 @@ export const getUnicodeData = async (): Promise<Character[]> => {
 
     // saved to file system
     fs.writeFileSync(
-      "./data/derivedDecompTypes.json",
+      DERIVED_DECOMPOSITION_FILE,
       JSON.stringify(derivedDecompTypes, null, 2)
     );
   }
@@ -50,8 +61,8 @@ export const getUnicodeData = async (): Promise<Character[]> => {
   try {
     // read cached file
     console.log("reading local derived bidi class data...");
-    const d = fs.readFileSync("./data/derivedBidiClasses.json");
-    derivedBidiClasses = JSON.parse(d.toString());
+    const data = fs.readFileSync(DERIVED_BIDI_CLASS_FILE).toString();
+    derivedBidiClasses = JSON.parse(data);
   } catch (err) {
     console.log(err);
     console.log("fetching derived bidi class data...");
@@ -60,7 +71,7 @@ export const getUnicodeData = async (): Promise<Character[]> => {
     derivedBidiClasses = parseDerivedData(derivedBidiClassesData);
     // saved to file system
     fs.writeFileSync(
-      "./data/derivedBidiClasses.json",
+      DERIVED_BIDI_CLASS_FILE,
       JSON.stringify(derivedBidiClasses, null, 2)
     );
   }
@@ -81,10 +92,8 @@ export const getUnicodeData = async (): Promise<Character[]> => {
     .map(formatCategory)
     .map(formatEnums);
 
-  console.log(characters.length);
-
   // save to validate
-  fs.writeFileSync("./data/final.json", JSON.stringify(characters, null, 2));
+  fs.writeFileSync(UNICODE_FILE, JSON.stringify(characters, null, 2));
 
   return characters;
 };

@@ -53,5 +53,5 @@ export const expander =
 
     // pop last element
     previousValue.pop();
-    return [...previousValue, ...between, currentValue];
+    return [...previousValue, ...between];
   };
