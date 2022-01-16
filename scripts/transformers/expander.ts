@@ -45,7 +45,11 @@ export const expander =
       return {
         ...currentValue,
         code,
-        decomposition,
+        // Do not include decomposition if it is the same as the character
+        decomposition:
+          decomposition.length > 1 || decomposition[0] !== code
+            ? decomposition
+            : [],
         // Table 4-8 Name Derivation Rule Prefix Strings
         name: getName(currentValue.name, code, decomposition, jamo),
       };
