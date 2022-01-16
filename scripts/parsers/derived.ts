@@ -7,8 +7,7 @@ const parseDerivedData = (text: string): DerivedData =>
   text
     .split(/\n/)
     .filter((line) => line !== "" && !line.startsWith("#"))
-    .reduce((acc, line, idx) => {
-      console.log("record", idx);
+    .reduce((acc, line) => {
       // can contain code range in form U+XXXX..U+YYYY
       const [codes, valueWithComment] = line.split(";").map((s) => s.trim());
 
@@ -39,8 +38,6 @@ const parseDerivedData = (text: string): DerivedData =>
 
       // range
       const codeRange = [...range(endCode - startCode, startCode), endCode];
-
-      console.log(startCode, "-", endCode, "=>", codeRange.length);
 
       const rangeTypes = codeRange.reduce(
         (prev, cur) => ({ ...prev, [cur]: value }),
