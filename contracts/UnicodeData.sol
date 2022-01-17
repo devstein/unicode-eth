@@ -6,9 +6,9 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./Unicode.sol";
 import "./UTF8Encoder.sol";
 
-/// @title An API for the Unicode database
+/// @title An API for the Unicode Character Database
 /// @author Devin Stein
-/// @notice The Unicode database available on Ethereum and to Ethereum developers
+/// @notice The Unicode Character Database available on Ethereum and to Ethereum developers
 /// @dev This project is only possible because of many previous Unicode data implementations. A few to highlight are
 /// https://unicode-org.github.io/icu-docs/apidoc/dev/icu4c/index.html
 /// https://github.com/open-i18n/rust-unic
