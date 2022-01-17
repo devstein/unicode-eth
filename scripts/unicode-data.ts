@@ -11,6 +11,7 @@ import { formatCategory } from "./transformers/category";
 import { formatEnums } from "./transformers/enum";
 import { updateWithDerivedData } from "./transformers/derived";
 import { expander } from "./transformers/expander";
+import { onlyCharacters } from "./transformers/filter";
 
 import { Character, JamoShortNames, DerivedData } from "./types";
 
@@ -25,6 +26,7 @@ const DATA_DIR = "./data";
 const UNICODE_FILE = `${DATA_DIR}/unicode.json`;
 const DERIVED_DECOMPOSITION_FILE = `${DATA_DIR}/derivedDecompTypes.json`;
 const DERIVED_BIDI_CLASS_FILE = `${DATA_DIR}/derivedBidiClasses.json`;
+const JAMO_FILE = `${DATA_DIR}/jamo.json`;
 
 export const getUnicodeData = async (): Promise<Character[]> => {
   // check if file exists
@@ -77,21 +79,35 @@ export const getUnicodeData = async (): Promise<Character[]> => {
     );
   }
 
-  console.log("fetching jamo data...");
-  const jamoData = await fetchText(JAMO_URL);
-  console.log("parsing jamo data...");
-  const jamoShortNames: JamoShortNames = parseJamo(jamoData);
+  let jamoShortNames: JamoShortNames;
+  try {
+    // read cached file
+    console.log("reading local jamo data...");
+    const data = fs.readFileSync(JAMO_FILE).toString();
+    jamoShortNames = JSON.parse(data);
+  } catch (err) {
+    console.log("no local jamo data found");
+    console.log("fetching jamo data...");
+    const jamoData = await fetchText(JAMO_URL);
+    console.log("parsing jamo data...");
+    jamoShortNames = parseJamo(jamoData);
+    // saved to file system
+    fs.writeFileSync(JAMO_FILE, JSON.stringify(jamoShortNames, null, 2));
+  }
 
   console.log("fetching unicode data...");
   const data = await fetchText(UNICODE_DATA_URL);
 
   console.log("transforming unicode data...");
   const characters: Character[] = parseUnicodeData(data)
+    .filter(onlyCharacters)
     // @ts-ignore
     .reduce(expander(jamoShortNames), [])
     .map(updateWithDerivedData(derivedDecompTypes, derivedBidiClasses))
     .map(formatCategory)
     .map(formatEnums);
+
+  console.log("total characters:", characters.length);
 
   // save to validate
   fs.writeFileSync(UNICODE_FILE, JSON.stringify(characters, null, 2));
