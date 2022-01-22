@@ -4,4 +4,8 @@ node_modules
 cache
 artifacts
 
+.env
+.env*
+
+todos.md
 todos.md
