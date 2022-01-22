@@ -6,6 +6,13 @@ The Unicode Ethereum Project is an initiative to provide libraries and contracts
 
 The Unicode Ethereum Project is under active development and has not been deployed the Ethereum Mainnet. We want to get sufficient feedback from the community before committing the resources required to deployed the Unicode Character Database to Ethereum. Please checkout [contributing](#contributing) to see how you can make an impact!
 
+
+| Contract    	|                                                            Ropsten                                                            	| Polygon Mumbai                                                                                                                  	| Polygon Mainnet 	| Ethereum Mainnet 	|
+|-------------	|:-----------------------------------------------------------------------------------------------------------------------------:	|---------------------------------------------------------------------------------------------------------------------------------	|-----------------	|------------------	|
+| Unicode     	| [0xe1a5dc72931a1e9c75bfa50787ab0f8f3d666956](https://ropsten.etherscan.io/address/0xe1a5dc72931a1e9c75bfa50787ab0f8f3d666956) 	| [0xDdF956e33f238bE394787A4C04EF3038E3307802](https://mumbai.polygonscan.com/address/0xDdF956e33f238bE394787A4C04EF3038E3307802) 	|        ❌        	|         ❌        	|
+| UTF8Encoder 	| [0x9fB43dc6c94763d7158E68da24BE6537Dfa4258a](https://ropsten.etherscan.io/address/0x9fB43dc6c94763d7158E68da24BE6537Dfa4258a) 	| [0xbC7b39ed8132064eCC00dfD8E5f07f3DD0b38d2B](https://mumbai.polygonscan.com/address/0xbC7b39ed8132064eCC00dfD8E5f07f3DD0b38d2B) 	|        ❌        	|         ❌        	|
+| UnicodeData 	|                                                               ❌                                                               	|                                                                ❌                                                                	|        ❌        	|         ❌        	|
+
 ## Motivation
 
 Unicode data and algorithms are essential to any major programming language. Solidity, like many lower-level programming languages, represent strings as a [UTF-8 encoded bytes](https://docs.soliditylang.org/en/v0.8.10/types.html#bytes-and-string-as-arrays) and does not natively support character-based operations like `length`, `charAt`, or `isLowercase`. There are popular third-party libraries for string manipulation, like https://github.com/Arachnid/solidity-stringutils, but none that provide information about the underlying Unicode characters. If you are building an application or contract that receives user input as strings, understanding user input is critical for any validation, sanitization, or standardization logic.
