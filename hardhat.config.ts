@@ -2,6 +2,8 @@ import { task, HardhatUserConfig } from "hardhat/config";
 import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-etherscan";
 
+import "dotenv/config";
+
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
 task("accounts", "Prints the list of accounts", async () => {
@@ -37,11 +39,11 @@ const config: HardhatUserConfig = {
   networks: {
     ropsten: {
       url: `https://eth-ropsten.alchemyapi.io/v2/${ROPSTEN_ALCHEMY_API_KEY}`,
-      accounts: [ROPSTEN_PRIVATE_KEY],
+      accounts: [`${ROPSTEN_PRIVATE_KEY}`],
     },
     mumbai: {
       url: `https://polygon-mumbai.g.alchemy.com/v2/${MUMBAI_ALCHEMY_API_KEY}`,
-      accounts: [MUMBAI_PRIVATE_KEY],
+      accounts: [`${MUMBAI_PRIVATE_KEY}`],
     },
   },
   etherscan: {

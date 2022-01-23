@@ -3,7 +3,8 @@
     "prettier": "npx prettier --write 'contracts/**/*.sol'"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^4.4.2"
+    "@openzeppelin/contracts": "^4.4.2",
+    "dotenv": "^14.2.0"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.2",
@@ -21,5 +22,27 @@
     "prettier-plugin-solidity": "^1.0.0-beta.19",
     "ts-node": "^10.4.0",
     "typescript": "^4.5.4"
-  }
+  },
+  "name": "unicode-eth",
+  "description": "The Unicode Ethereum Project is an initiative to provide libraries and contracts for Unicode data, algorithms, and utilities for Ethereum developers.",
+  "version": "0.0.1",
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devstein/unicode-eth.git"
+  },
+  "keywords": [
+    "solidity",
+    "unicode",
+    "utf8",
+    "strings"
+  ],
+  "author": "devstein",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/devstein/unicode-eth/issues"
+  },
+  "homepage": "https://github.com/devstein/unicode-eth#readme"
 }
