@@ -3,6 +3,9 @@ import { Contract } from "ethers";
 import { Character } from "./types";
 import { getUnicodeData } from "./unicode-data";
 
+// roughly the number of characters we can set within the gas limit
+const BATCH_SIZE = 125;
+
 const charToParameter = (c: Character) =>
   Object.values({
     name: c.name,
@@ -25,7 +28,14 @@ export const initializeUnicodeData = async (contract: Contract) => {
   const characters = await getUnicodeData();
 
   const total = characters.length;
+  const numBatches = total / BATCH_SIZE;
   let count = 0;
+  let failed = false;
+  let batch = {
+    codes: [],
+    data: [],
+  };
+
   for (let char of characters) {
     // keep track of progress
     count++;
@@ -38,11 +48,42 @@ export const initializeUnicodeData = async (contract: Contract) => {
 
     // set each character
     const data = charToParameter(char);
+
+    // @ts-ignore
+    batch.codes = [...batch.codes, char.code];
+    // @ts-ignore
+    batch.data = [...batch.data, data];
+
+    if (batch.codes.length < BATCH_SIZE) {
+      continue;
+    }
+
     try {
-      await contract.set(char.code, data);
+      await contract.setBatch(batch.codes, batch.data);
+      // reset
+      batch = {
+        codes: [],
+        data: [],
+      };
     } catch (err) {
-      console.log("failed to set:", char);
+      console.log(err);
+      console.log("failed to set batch:", batch);
+      failed = true;
       break;
     }
+  }
+
+  // set final batch if it exists
+  if (!batch.codes.length || failed) return;
+
+  try {
+    await contract.setBatch(batch.codes, batch.data);
+    // reset
+    batch = {
+      codes: [],
+      data: [],
+    };
+  } catch (err) {
+    console.log("failed to set final batch:", batch);
   }
 };
