@@ -796,7 +796,7 @@ function renounceOwnership() external nonpayable
 function set(uint32 _codePoint, UnicodeData.Character _data) external nonpayable
 ```
 
-This is onlyty used by the owner to initialize and update Unicode character database
+This is only used by the owner to initialize and update Unicode character database
 
 
 
