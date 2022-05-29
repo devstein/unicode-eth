@@ -259,13 +259,35 @@ contract UnicodeData is Ownable {
     return char;
   }
 
-  /// @notice This should only be used by the owner to initialize and update Unicode character database
+  /// @notice This is onlyty used by the owner to initialize and update Unicode character database
   /// @param _codePoint The Unicode code point to set
   /// @param _data The character data
   function set(uint32 _codePoint, Character calldata _data) external onlyOwner {
     // Require name to be non-empty!
     require(bytes(_data.name).length > 0, "character name must not be empty");
     characters[_codePoint] = _data;
+  }
+
+  /// @notice This is only used by the owner to initialize and update Unicode character database
+  /// @param _codePoints The Unicode code points to set
+  /// @param _data The list of character data to set
+  /// @dev Order matters! Order of _data must match the order of _codePoints
+  function setBatch(uint32[] calldata _codePoints, Character[] calldata _data)
+    external
+    onlyOwner
+  {
+    uint256 len = _codePoints.length;
+    uint256 i;
+
+    for (i = 0; i < len; i++) {
+      uint32 codePoint = _codePoints[i];
+      // Require name to be non-empty!
+      require(
+        bytes(_data[i].name).length > 0,
+        "character name must not be empty"
+      );
+      characters[codePoint] = _data[i];
+    }
   }
 
   // -------

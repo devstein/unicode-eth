@@ -796,7 +796,7 @@ function renounceOwnership() external nonpayable
 function set(uint32 _codePoint, UnicodeData.Character _data) external nonpayable
 ```
 
-This should only be used by the owner to initialize and update Unicode character database
+This is onlyty used by the owner to initialize and update Unicode character database
 
 
 
@@ -806,6 +806,23 @@ This should only be used by the owner to initialize and update Unicode character
 |---|---|---|
 | _codePoint | uint32 | The Unicode code point to set
 | _data | UnicodeData.Character | The character data
+
+### setBatch
+
+```solidity
+function setBatch(uint32[] _codePoints, UnicodeData.Character[] _data) external nonpayable
+```
+
+This is only used by the owner to initialize and update Unicode character database
+
+*Order matters! Order of _data must match the order of _codePoints*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _codePoints | uint32[] | The Unicode code points to set
+| _data | UnicodeData.Character[] | The list of character data to set
 
 ### titlecase
 
