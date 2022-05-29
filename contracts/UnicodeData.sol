@@ -259,7 +259,7 @@ contract UnicodeData is Ownable {
     return char;
   }
 
-  /// @notice This is onlyty used by the owner to initialize and update Unicode character database
+  /// @notice This is only used by the owner to initialize and update Unicode character database
   /// @param _codePoint The Unicode code point to set
   /// @param _data The character data
   function set(uint32 _codePoint, Character calldata _data) external onlyOwner {
