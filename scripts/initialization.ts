@@ -67,7 +67,7 @@ export const initializeUnicodeData = async (contract: Contract) => {
       };
     } catch (err) {
       console.log(err);
-      console.log("failed to set:", char);
+      console.log("failed to set batch:", batch);
       failed = true;
       break;
     }
