@@ -2,6 +2,8 @@
 
 The Unicode Ethereum Project is an initiative to provide libraries and contracts for Unicode data, algorithms, and utilities for Ethereum developers.
 
+_Want to support the Unicode Ethereum Project? Donate to the [Gitcoin Grant](https://gitcoin.co/grants/6583/unicode-ethereum-project)!_
+
 ## Project Status
 
 The Unicode Ethereum Project is under active development and has not been deployed the Ethereum Mainnet. We want to get sufficient feedback from the community before committing the resources required to deployed the Unicode Character Database to Ethereum. Please checkout [contributing](#contributing) to see how you can make an impact!
