@@ -15,7 +15,7 @@
     "@types/mocha": "^8.2.3",
     "@types/node": "^15.14.9",
     "chai": "^4.3.4",
-    "ethereum-waffle": "^3.3.0",
+    "ethereum-waffle": "^4.0.9",
     "ethers": "^5.2.0",
     "hardhat": "^2.3.0",
     "node-fetch": "^2.6.1",
